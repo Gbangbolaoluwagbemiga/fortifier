@@ -2,7 +2,7 @@
 id: 0
 name: Mainnet deployment
 network: mainnet
-stacks-node: "https://stacks-node-api.mainnet.stacks.co"
+stacks-node: "https://api.hiro.so"
 bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
 plan:
   batches:
