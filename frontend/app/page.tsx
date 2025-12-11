@@ -8,36 +8,37 @@ import {
   broadcastTransaction,
   AnchorMode,
   PostConditionMode,
-  standardPrincipalCV,
-  uintCV,
-  stringAsciiCV,
-  ClarityValue
 } from '@stacks/transactions';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN.circuit-breaker';
 const [address, contractName] = CONTRACT_ADDRESS.split('.');
-
-const appConfig = new AppConfig(['store_write', 'publish_data']);
-const userSession = new UserSession({ appConfig });
-const network = new StacksTestnet({ url: 'https://api.testnet.hiro.so' });
 
 export default function Home() {
   const [userData, setUserData] = useState<any>(null);
   const [isPaused, setIsPaused] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string>('');
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
+  const [network, setNetwork] = useState<StacksTestnet | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      if (userSession && userSession.isUserSignedIn()) {
-        setUserData(userSession.loadUserData());
+      const appConfig = new AppConfig(['store_write', 'publish_data']);
+      const session = new UserSession({ appConfig });
+      const net = new StacksTestnet({ url: 'https://api.testnet.hiro.so' });
+      
+      setUserSession(session);
+      setNetwork(net);
+      
+      if (session.isUserSignedIn()) {
+        setUserData(session.loadUserData());
       }
       checkPauseStatus();
     }
   }, []);
 
   const connectWallet = async () => {
-    if (typeof window === 'undefined' || !userSession) return;
+    if (!userSession) return;
     
     showConnect({
       appDetails: {
@@ -45,9 +46,11 @@ export default function Home() {
         icon: window.location.origin + '/icon.png',
       },
       onFinish: () => {
-        const userData = userSession.loadUserData();
-        setUserData(userData);
-        setStatus('Wallet connected!');
+        if (userSession) {
+          const userData = userSession.loadUserData();
+          setUserData(userData);
+          setStatus('Wallet connected!');
+        }
       },
       userSession,
     });
@@ -82,7 +85,7 @@ export default function Home() {
   };
 
   const pauseContract = async () => {
-    if (!userData || !network) {
+    if (!userData || !network || !userSession) {
       setStatus('Please connect wallet first');
       return;
     }
@@ -120,7 +123,7 @@ export default function Home() {
   };
 
   const unpauseContract = async () => {
-    if (!userData || !network) {
+    if (!userData || !network || !userSession) {
       setStatus('Please connect wallet first');
       return;
     }
