@@ -28,7 +28,7 @@ export default function Home() {
       const session = new UserSession({ appConfig });
       // Create network configuration object for testnet
       const net = {
-        coreApiUrl: 'https://api.testnet.hiro.so',
+        url: 'https://api.testnet.hiro.so',
         network: 'testnet' as const,
       };
       
@@ -112,9 +112,9 @@ export default function Home() {
       };
 
       const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction({
-        transaction,
-        ...network,
+      const broadcastResponse = await broadcastTransaction(transaction, {
+        url: network.url,
+        network: network.network,
       });
 
       if ('error' in broadcastResponse) {
@@ -153,9 +153,9 @@ export default function Home() {
       };
 
       const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction({
-        transaction,
-        ...network,
+      const broadcastResponse = await broadcastTransaction(transaction, {
+        url: network.url,
+        network: network.network,
       });
 
       if ('error' in broadcastResponse) {
