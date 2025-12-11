@@ -8,6 +8,7 @@
 (define-constant ERR-INVALID-RATE-LIMIT (err u1004))
 (define-constant ERR-RATE-LIMIT-EXCEEDED (err u1005))
 (define-constant ERR-STAGED-UNPAUSE-ACTIVE (err u1006))
+(define-constant ERR-INVALID-OWNER (err u1007))
 
 (define-data-var paused bool false)
 (define-data-var paused-by principal none)
@@ -202,7 +203,23 @@
 		(begin
 			(asserts! (is-authorized caller) ERR-UNAUTHORIZED)
 			(asserts! (is-eq (var-get paused) false) ERR-PAUSED)
+			(asserts! (not (is-eq new-owner caller)) ERR-INVALID-OWNER)
 			(var-set owner new-owner)
+			(ok true)
+		)
+	)
+)
+
+;; Public: Emergency reset staged unpause (owner only)
+(define-public (reset-staged-unpause)
+	(let ((caller tx-sender))
+		(begin
+			(asserts! (is-authorized caller) ERR-UNAUTHORIZED)
+			(var-set staged-unpause-active false)
+			(var-set staged-unpause-start-block none)
+			(var-set staged-unpause-duration none)
+			(var-set staged-unpause-rate-limit none)
+			(var-set staged-unpause-total-spent u0)
 			(ok true)
 		)
 	)
