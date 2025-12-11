@@ -26,10 +26,10 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       const appConfig = new AppConfig(['store_write', 'publish_data']);
       const session = new UserSession({ appConfig });
-      // Create network configuration object for testnet
+      // Create network configuration object for mainnet
       const net = {
-        url: 'https://api.testnet.hiro.so',
-        network: 'testnet' as const,
+        url: 'https://api.hiro.so',
+        network: 'mainnet' as const,
       };
       
       setUserSession(session);
@@ -72,7 +72,7 @@ export default function Home() {
   const checkPauseStatus = async () => {
     try {
       const response = await fetch(
-        `https://api.testnet.hiro.so/v2/contracts/call-read/${address}/${contractName}/is-paused`,
+        `https://api.hiro.so/v2/contracts/call-read/${address}/${contractName}/is-paused`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -220,7 +220,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400 dark:text-gray-600">Connected</p>
-                    <p className="text-lg font-mono dark:text-gray-900">{userData.profile?.stxAddress?.testnet || 'N/A'}</p>
+                    <p className="text-lg font-mono dark:text-gray-900">{userData.profile?.stxAddress?.mainnet || userData.profile?.stxAddress?.testnet || 'N/A'}</p>
                   </div>
                   <button
                     onClick={disconnect}
@@ -285,7 +285,7 @@ export default function Home() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-400 dark:text-gray-600">Network:</span>
-                  <span className="font-mono dark:text-gray-900">Testnet</span>
+                  <span className="font-mono dark:text-gray-900">Mainnet</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400 dark:text-gray-600">Contract:</span>
@@ -294,7 +294,7 @@ export default function Home() {
                 <div className="flex justify-between">
                   <span className="text-gray-400 dark:text-gray-600">Explorer:</span>
                   <a 
-                    href={`https://explorer.stacks.co/?chain=testnet&address=${address}`}
+                    href={`https://explorer.stacks.co/?chain=mainnet&address=${address}`}
             target="_blank"
             rel="noopener noreferrer"
                     className="text-blue-400 dark:text-blue-600 hover:text-blue-300 dark:hover:text-blue-700"
