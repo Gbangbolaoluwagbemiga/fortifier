@@ -10,6 +10,11 @@ const nextConfig = {
     };
     return config;
   },
+  turbopack: {
+    resolveAlias: {
+      // Add any aliases if needed
+    },
+  },
 };
 
 module.exports = nextConfig;
