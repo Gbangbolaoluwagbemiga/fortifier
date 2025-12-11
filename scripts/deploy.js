@@ -81,7 +81,7 @@ async function deployContract(contractName, network, privateKey, isMainnet, depl
       anchorMode: transactions.AnchorMode.Any,
       postConditionMode: transactions.PostConditionMode.Allow,
       fee: 10000,
-      nonce: account.nonce,
+      nonce: nonce,
     };
 
     const transaction = await transactions.makeContractDeploy(txOptions);
