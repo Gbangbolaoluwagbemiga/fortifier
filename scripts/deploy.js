@@ -6,14 +6,22 @@
  */
 
 import * as transactions from '@stacks/transactions';
-import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import networkPkg from '@stacks/network';
 import { generateWallet } from '@stacks/wallet-sdk';
+
+const { StacksMainnet, StacksTestnet } = networkPkg;
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Load .env file
+const envPath = join(__dirname, '..', '.env');
+if (existsSync(envPath)) {
+  config({ path: envPath });
+}
 
 // Only deploy circuit-breaker to stay under 0.5 STX limit
 const CONTRACTS = [
@@ -66,7 +74,7 @@ async function deployContract(contractName, network, privateKey, isMainnet) {
     
     console.log(`   ✅ Broadcast successful!`);
     console.log(`   📡 TX ID: ${broadcastResponse.txid}`);
-    const chainParam = network.chainId === transactions.ChainID.Testnet ? 'testnet' : 'mainnet';
+    const chainParam = network.chainId === 2147483648 ? 'testnet' : 'mainnet';
     console.log(`   🔗 Explorer: https://explorer.stacks.co/txid/${broadcastResponse.txid}?chain=${chainParam}`);
     
     return {
@@ -93,27 +101,50 @@ async function main() {
   
   const isMainnet = networkType === 'mainnet';
   
-  // Create network configuration
-  const network = isMainnet
-    ? new StacksMainnet({ url: 'https://api.hiro.so' })
-    : new StacksTestnet({ url: 'https://api.testnet.hiro.so' });
+  // Create network configuration object
+  // @stacks/transactions expects a network object with url and chainId
+  const network = {
+    url: isMainnet ? 'https://api.hiro.so' : 'https://api.testnet.hiro.so',
+    chainId: isMainnet ? 1 : 2147483648, // Mainnet: 1, Testnet: 2147483648
+  };
   
   // Get private key from environment or mnemonic
   let privateKey = process.env.DEPLOYER_PRIVATE_KEY;
   
   // If no private key, try to get from mnemonic
   if (!privateKey) {
-    const mnemonic = process.env.DEPLOYER_MNEMONIC;
+    let mnemonic = process.env.DEPLOYER_MNEMONIC;
     if (mnemonic) {
       try {
         console.log('🔑 Deriving private key from mnemonic...');
-        const wallet = await generateWallet({ secretKey: mnemonic, password: '' });
-        // Get the first account's private key
-        const account = wallet.accounts[0];
-        privateKey = account.stxPrivateKey;
-        console.log(`   ✅ Derived address: ${account.address}`);
+        // Clean up mnemonic
+        mnemonic = mnemonic.trim().replace(/^["']|["']$/g, '');
+        const words = mnemonic.split(/\s+/).filter(w => w.length > 0);
+        console.log(`   Mnemonic words: ${words.length}`);
+        
+        // Try using @stacks/wallet-sdk first
+        try {
+          const wallet = await generateWallet({ secretKey: mnemonic, password: '' });
+          const account = wallet.accounts[0];
+          privateKey = account.stxPrivateKey;
+          console.log(`   ✅ Derived address: ${account.address}`);
+        } catch (walletError) {
+          // Fallback: derive directly using BIP39 and BIP32
+          console.log('   Using direct BIP39 derivation...');
+          const seed = mnemonicToSeedSync(mnemonic);
+          const hdKey = HDKey.fromMasterSeed(seed);
+          // Stacks uses derivation path m/44'/5757'/0'/0/0
+          const stacksKey = hdKey.derive("m/44'/5757'/0'/0/0");
+          privateKey = stacksKey.privateKey?.toString('hex');
+          if (!privateKey) {
+            throw new Error('Failed to derive private key');
+          }
+          const address = transactions.getAddressFromPrivateKey(privateKey, isMainnet ? transactions.AddressVersion.MainnetSingleSig : transactions.AddressVersion.TestnetSingleSig);
+          console.log(`   ✅ Derived address: ${address}`);
+        }
       } catch (error) {
         console.error('❌ Failed to derive private key from mnemonic:', error.message);
+        console.error('   Make sure the mnemonic is valid BIP39 format (12 or 24 words)');
         process.exit(1);
       }
     }

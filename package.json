@@ -23,10 +23,13 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@scure/bip32": "^2.0.1",
+    "@scure/bip39": "^2.0.1",
     "@stacks/connect": "^8.2.3",
     "@stacks/network": "^7.2.0",
     "@stacks/transactions": "^7.3.0",
-    "@stacks/wallet-sdk": "^7.2.0"
+    "@stacks/wallet-sdk": "^7.2.0",
+    "dotenv": "^17.2.3"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
