@@ -15,32 +15,4 @@ plan:
             path: contracts/circuit-breaker.clar
             anchor-block-only: true
             clarity-version: 1
-        - contract-publish:
-            contract-name: fortifier
-            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
-            cost: 909790
-            path: contracts/fortifier.clar
-            anchor-block-only: true
-            clarity-version: 1
-        - contract-publish:
-            contract-name: guard
-            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
-            cost: 911099
-            path: contracts/guard.clar
-            anchor-block-only: true
-            clarity-version: 1
-        - contract-publish:
-            contract-name: quarantine
-            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
-            cost: 909135
-            path: contracts/quarantine.clar
-            anchor-block-only: true
-            clarity-version: 1
-        - contract-publish:
-            contract-name: role-change-guardian
-            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
-            cost: 912408
-            path: contracts/role-change-guardian.clar
-            anchor-block-only: true
-            clarity-version: 1
       epoch: "2.05"
