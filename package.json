@@ -24,12 +24,13 @@
   "license": "MIT",
   "dependencies": {
     "@stacks/connect": "^8.2.3",
-    "@stacks/transactions": "^7.3.0"
+    "@stacks/network": "^7.2.0",
+    "@stacks/transactions": "^7.3.0",
+    "@stacks/wallet-sdk": "^7.2.0"
   },
   "devDependencies": {
-    "vitest": "^1.0.0",
+    "@types/node": "^20.0.0",
     "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "vitest": "^1.0.0"
   }
 }
-

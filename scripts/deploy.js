@@ -6,6 +6,8 @@
  */
 
 import * as transactions from '@stacks/transactions';
+import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { generateWallet } from '@stacks/wallet-sdk';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,19 +15,19 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Only deploy circuit-breaker to stay under 0.5 STX limit
 const CONTRACTS = [
-  'circuit-breaker',
-  'guard',
-  'quarantine',
-  'role-change-guardian',
-  'fortifier'
+  'circuit-breaker'
 ];
 
-async function deployContract(contractName, network, privateKey) {
+async function deployContract(contractName, network, privateKey, isMainnet) {
   const contractPath = join(__dirname, '..', 'contracts', `${contractName}.clar`);
   const contractCode = readFileSync(contractPath, 'utf8');
   
-  const address = transactions.getAddressFromPrivateKey(privateKey, transactions.AddressVersion.TestnetSingleSig);
+  const addressVersion = isMainnet 
+    ? transactions.AddressVersion.MainnetSingleSig 
+    : transactions.AddressVersion.TestnetSingleSig;
+  const address = transactions.getAddressFromPrivateKey(privateKey, addressVersion);
   const contractAddress = address.split('.')[0];
   
   console.log(`\n📦 Deploying ${contractName}...`);
@@ -89,17 +91,38 @@ async function main() {
     process.exit(1);
   }
   
-  // Create network configuration
-  const network = networkType === 'testnet' 
-    ? new transactions.StacksTestnet({ url: 'https://api.testnet.hiro.so' })
-    : new transactions.StacksMainnet({ url: 'https://api.hiro.so' });
+  const isMainnet = networkType === 'mainnet';
   
-  // Get private key from environment
-  const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
+  // Create network configuration
+  const network = isMainnet
+    ? new StacksMainnet({ url: 'https://api.hiro.so' })
+    : new StacksTestnet({ url: 'https://api.testnet.hiro.so' });
+  
+  // Get private key from environment or mnemonic
+  let privateKey = process.env.DEPLOYER_PRIVATE_KEY;
+  
+  // If no private key, try to get from mnemonic
+  if (!privateKey) {
+    const mnemonic = process.env.DEPLOYER_MNEMONIC;
+    if (mnemonic) {
+      try {
+        console.log('🔑 Deriving private key from mnemonic...');
+        const wallet = await generateWallet({ secretKey: mnemonic, password: '' });
+        // Get the first account's private key
+        const account = wallet.accounts[0];
+        privateKey = account.stxPrivateKey;
+        console.log(`   ✅ Derived address: ${account.address}`);
+      } catch (error) {
+        console.error('❌ Failed to derive private key from mnemonic:', error.message);
+        process.exit(1);
+      }
+    }
+  }
   
   if (!privateKey) {
-    console.error('❌ DEPLOYER_PRIVATE_KEY environment variable not set');
+    console.error('❌ DEPLOYER_PRIVATE_KEY or DEPLOYER_MNEMONIC environment variable not set');
     console.error('   Set it with: export DEPLOYER_PRIVATE_KEY=your_private_key');
+    console.error('   Or: export DEPLOYER_MNEMONIC="your 24 word mnemonic"');
     console.error('   Or add it to .env file');
     process.exit(1);
   }
@@ -112,7 +135,7 @@ async function main() {
   const results = [];
   
   for (const contract of CONTRACTS) {
-    const result = await deployContract(contract, network, privateKey);
+    const result = await deployContract(contract, network, privateKey, isMainnet);
     if (result) {
       results.push(result);
     }

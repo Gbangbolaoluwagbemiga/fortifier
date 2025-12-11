@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Script to verify contract deployment and owner on Stacks mainnet
+ * Script to verify contract deployment and owner on Stacks
  */
 
 const https = require('https');
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN.circuit-breaker';
 const [address, contractName] = CONTRACT_ADDRESS.split('.');
+const NETWORK = process.env.NEXT_PUBLIC_NETWORK || 'testnet';
 
 async function fetchJSON(url) {
   return new Promise((resolve, reject) => {
@@ -36,11 +37,13 @@ async function fetchJSON(url) {
 async function verifyContract() {
   console.log('🔍 Verifying Contract Deployment\n');
   console.log(`Contract: ${CONTRACT_ADDRESS}`);
-  console.log(`Network: Mainnet\n`);
+  console.log(`Network: ${NETWORK}\n`);
+
+  const apiUrl = NETWORK === 'mainnet' ? 'https://api.hiro.so' : 'https://api.testnet.hiro.so';
 
   try {
     // Check if contract exists
-    const contractUrl = `${API_URL}/v2/contracts/${address}/${contractName}`;
+    const contractUrl = `${apiUrl}/v2/contracts/${address}/${contractName}`;
     console.log('Checking contract existence...');
     const contractInfo = await fetchJSON(contractUrl);
     
@@ -51,7 +54,7 @@ async function verifyContract() {
     // Try to read owner
     console.log('Checking contract owner...');
     try {
-      const ownerUrl = `${API_URL}/v2/contracts/call-read/${address}/${contractName}/get-owner`;
+      const ownerUrl = `${apiUrl}/v2/contracts/call-read/${address}/${contractName}/get-owner`;
       const ownerResponse = await fetchJSON(ownerUrl);
       if (ownerResponse.result) {
         console.log(`   Owner: ${ownerResponse.result.repr}`);
@@ -63,7 +66,7 @@ async function verifyContract() {
     // Check pause status
     console.log('\nChecking pause status...');
     try {
-      const pauseUrl = `${API_URL}/v2/contracts/call-read/${address}/${contractName}/is-paused`;
+      const pauseUrl = `${apiUrl}/v2/contracts/call-read/${address}/${contractName}/is-paused`;
       const pauseResponse = await fetchJSON(pauseUrl);
       if (pauseResponse.result) {
         const isPaused = pauseResponse.result.repr === 'true';
@@ -95,4 +98,3 @@ async function verifyContract() {
 }
 
 verifyContract();
-
