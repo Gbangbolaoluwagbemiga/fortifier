@@ -1,46 +1,46 @@
 ---
 id: 0
-name: "Fortifier Testnet Deployment"
+name: Testnet deployment
 network: testnet
 stacks-node: "https://api.testnet.hiro.so"
-bitcoin-node: "https://mempool.space/testnet/api"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
 plan:
   batches:
     - id: 0
       transactions:
         - contract-publish:
             contract-name: circuit-breaker
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 50000
+            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
+            cost: 931692
             path: contracts/circuit-breaker.clar
             anchor-block-only: true
-            clarity-version: 4
-        - contract-publish:
-            contract-name: guard
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 50000
-            path: contracts/guard.clar
-            anchor-block-only: true
-            clarity-version: 4
-        - contract-publish:
-            contract-name: quarantine
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 50000
-            path: contracts/quarantine.clar
-            anchor-block-only: true
-            clarity-version: 4
-        - contract-publish:
-            contract-name: role-change-guardian
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 50000
-            path: contracts/role-change-guardian.clar
-            anchor-block-only: true
-            clarity-version: 4
+            clarity-version: 1
         - contract-publish:
             contract-name: fortifier
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 50000
+            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
+            cost: 930019
             path: contracts/fortifier.clar
             anchor-block-only: true
-            clarity-version: 4
-
+            clarity-version: 1
+        - contract-publish:
+            contract-name: guard
+            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
+            cost: 931357
+            path: contracts/guard.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: quarantine
+            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
+            cost: 929350
+            path: contracts/quarantine.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: role-change-guardian
+            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
+            cost: 932696
+            path: contracts/role-change-guardian.clar
+            anchor-block-only: true
+            clarity-version: 1
+      epoch: "2.05"
