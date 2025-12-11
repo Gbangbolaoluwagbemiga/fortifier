@@ -6,13 +6,6 @@
  */
 
 import * as transactions from '@stacks/transactions';
-const { 
-  makeContractDeploy, 
-  broadcastTransaction, 
-  AnchorMode,
-  PostConditionMode,
-  getAddressFromPrivateKey
-} = transactions;
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -32,29 +25,34 @@ async function deployContract(contractName, network, privateKey) {
   const contractPath = join(__dirname, '..', 'contracts', `${contractName}.clar`);
   const contractCode = readFileSync(contractPath, 'utf8');
   
-  const address = getAddressFromPrivateKey(privateKey);
-  const [addressVersion, hash160] = address.split('.');
+  const address = transactions.getAddressFromPrivateKey(privateKey, transactions.AddressVersion.TestnetSingleSig);
   const contractAddress = address.split('.')[0];
   
   console.log(`\n📦 Deploying ${contractName}...`);
   console.log(`   Address: ${address}`);
   
-  const txOptions = {
-    contractName,
-    codeBody: contractCode,
-    senderKey: privateKey,
-    network,
-    anchorMode: AnchorMode.Any,
-    postConditionMode: PostConditionMode.Allow,
-    fee: 10000,
-    nonce: 0, // Will be fetched automatically
-  };
-
   try {
-    const transaction = await makeContractDeploy(txOptions);
+    // Get nonce
+    const account = await transactions.getAccountNonce({
+      address,
+      network
+    });
+    
+    const txOptions = {
+      contractName,
+      codeBody: contractCode,
+      senderKey: privateKey,
+      network,
+      anchorMode: transactions.AnchorMode.Any,
+      postConditionMode: transactions.PostConditionMode.Allow,
+      fee: 10000,
+      nonce: account.nonce,
+    };
+
+    const transaction = await transactions.makeContractDeploy(txOptions);
     console.log(`   ✅ Transaction created: ${transaction.txid()}`);
     
-    const broadcastResponse = await broadcastTransaction(transaction, network);
+    const broadcastResponse = await transactions.broadcastTransaction(transaction, network);
     
     if (broadcastResponse.error) {
       console.error(`   ❌ Error: ${broadcastResponse.error}`);
@@ -66,7 +64,8 @@ async function deployContract(contractName, network, privateKey) {
     
     console.log(`   ✅ Broadcast successful!`);
     console.log(`   📡 TX ID: ${broadcastResponse.txid}`);
-    console.log(`   🔗 Explorer: ${network.coreApiUrl.replace('/v2', '')}/txid/${broadcastResponse.txid}`);
+    const chainParam = network.chainId === transactions.ChainID.Testnet ? 'testnet' : 'mainnet';
+    console.log(`   🔗 Explorer: https://explorer.stacks.co/txid/${broadcastResponse.txid}?chain=${chainParam}`);
     
     return {
       contractName,
@@ -75,6 +74,9 @@ async function deployContract(contractName, network, privateKey) {
     };
   } catch (error) {
     console.error(`   ❌ Deployment failed: ${error.message}`);
+    if (error.stack) {
+      console.error(`   Stack: ${error.stack}`);
+    }
     return null;
   }
 }
@@ -89,21 +91,16 @@ async function main() {
   
   // Create network configuration
   const network = networkType === 'testnet' 
-    ? {
-        coreApiUrl: 'https://api.testnet.hiro.so',
-        network: transactions.StacksNetworkVersion.testnet
-      }
-    : {
-        coreApiUrl: 'https://api.hiro.so',
-        network: transactions.StacksNetworkVersion.mainnet
-      };
+    ? new transactions.StacksTestnet({ url: 'https://api.testnet.hiro.so' })
+    : new transactions.StacksMainnet({ url: 'https://api.hiro.so' });
   
-  // Get private key from environment or settings
+  // Get private key from environment
   const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
   
   if (!privateKey) {
     console.error('❌ DEPLOYER_PRIVATE_KEY environment variable not set');
     console.error('   Set it with: export DEPLOYER_PRIVATE_KEY=your_private_key');
+    console.error('   Or add it to .env file');
     process.exit(1);
   }
   
@@ -120,7 +117,7 @@ async function main() {
       results.push(result);
     }
     // Wait a bit between deployments
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
   }
   
   console.log(`\n\n📊 Deployment Summary:`);
@@ -134,8 +131,12 @@ async function main() {
     });
   }
   
+  if (results.length < CONTRACTS.length) {
+    console.log(`\n⚠️  Some contracts failed to deploy. Check errors above.`);
+    process.exit(1);
+  }
+  
   console.log(`\n✨ Deployment complete!\n`);
 }
 
 main().catch(console.error);
-
