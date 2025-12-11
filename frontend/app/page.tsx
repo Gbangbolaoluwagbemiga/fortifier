@@ -28,13 +28,17 @@ export default function Home() {
   const [status, setStatus] = useState<string>('');
 
   useEffect(() => {
-    if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData());
+    if (typeof window !== 'undefined') {
+      if (userSession && userSession.isUserSignedIn()) {
+        setUserData(userSession.loadUserData());
+      }
+      checkPauseStatus();
     }
-    checkPauseStatus();
   }, []);
 
   const connectWallet = async () => {
+    if (typeof window === 'undefined' || !userSession) return;
+    
     showConnect({
       appDetails: {
         name: 'Fortifier',
@@ -50,7 +54,9 @@ export default function Home() {
   };
 
   const disconnect = () => {
-    userSession.signUserOut();
+    if (userSession) {
+      userSession.signUserOut();
+    }
     setUserData(null);
     setStatus('Disconnected');
   };
