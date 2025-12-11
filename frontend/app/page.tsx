@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppConfig, UserSession, showConnect } from '@stacks/connect';
+import { AppConfig, UserSession, showConnect, openContractCall } from '@stacks/connect';
 import { 
-  makeContractCall, 
-  broadcastTransaction,
   AnchorMode,
   PostConditionMode,
 } from '@stacks/transactions';
@@ -112,7 +110,11 @@ export default function Home() {
       };
 
       const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction(transaction);
+      const broadcastResponse = await broadcastTransaction({
+        transaction,
+        coreApiUrl: network.url,
+        network: network.network,
+      });
 
       if ('error' in broadcastResponse) {
         setStatus(`Error: ${broadcastResponse.error}`);
@@ -150,7 +152,11 @@ export default function Home() {
       };
 
       const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction(transaction);
+      const broadcastResponse = await broadcastTransaction({
+        transaction,
+        coreApiUrl: network.url,
+        network: network.network,
+      });
 
       if ('error' in broadcastResponse) {
         setStatus(`Error: ${broadcastResponse.error}`);
