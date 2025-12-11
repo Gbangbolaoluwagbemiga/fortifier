@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { AppConfig, UserSession, showConnect } from '@stacks/connect';
-import { StacksTestnet } from '@stacks/network';
 import { 
   makeContractCall, 
   broadcastTransaction,
   AnchorMode,
   PostConditionMode,
+  StacksTestnet,
 } from '@stacks/transactions';
 import { useTheme } from './contexts/ThemeContext';
 
