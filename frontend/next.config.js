@@ -32,11 +32,23 @@ const nextConfig = {
     const path = require('path');
     config.plugins = config.plugins || [];
     
-    // Use NormalModuleReplacementPlugin to replace viem test module
+    // Replace viem test decorators module with our stub
     config.plugins.push(
       new webpack.NormalModuleReplacementPlugin(
-        /viem\/_esm\/clients\/decorators\/test\.js$/,
+        /^.*\/viem\/_esm\/clients\/decorators\/test\.js$/,
         path.resolve(__dirname, 'webpack-fixes/viem-test-stub.js')
+      )
+    );
+    
+    // Also try replacing relative imports
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(
+        /\.\/clients\/decorators\/test\.js$/,
+        (resource) => {
+          if (resource.context.includes('viem')) {
+            resource.request = path.resolve(__dirname, 'webpack-fixes/viem-test-stub.js');
+          }
+        }
       )
     );
     
