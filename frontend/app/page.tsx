@@ -8,13 +8,13 @@ import {
   AnchorMode,
   PostConditionMode,
 } from '@stacks/transactions';
-import { StacksNetworks } from '@stacks/network';
 import { useTheme } from './contexts/ThemeContext';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN.circuit-breaker';
 const [address, contractName] = CONTRACT_ADDRESS.split('.');
 
 export default function Home() {
+  const { theme, toggleTheme } = useTheme();
   const [userData, setUserData] = useState<any>(null);
   const [isPaused, setIsPaused] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,11 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       const appConfig = new AppConfig(['store_write', 'publish_data']);
       const session = new UserSession({ appConfig });
-      const net = new StacksTestnet({ url: 'https://api.testnet.hiro.so' });
+      // Create network configuration object for testnet
+      const net = {
+        coreApiUrl: 'https://api.testnet.hiro.so',
+        network: 'testnet' as const,
+      };
       
       setUserSession(session);
       setNetwork(net);
@@ -108,9 +112,12 @@ export default function Home() {
       };
 
       const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction(transaction, network);
+      const broadcastResponse = await broadcastTransaction({
+        transaction,
+        ...network,
+      });
 
-      if (broadcastResponse.error) {
+      if ('error' in broadcastResponse) {
         setStatus(`Error: ${broadcastResponse.error}`);
       } else {
         setStatus(`Transaction submitted! TX: ${broadcastResponse.txid}`);
@@ -146,9 +153,12 @@ export default function Home() {
       };
 
       const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction(transaction, network);
+      const broadcastResponse = await broadcastTransaction({
+        transaction,
+        ...network,
+      });
 
-      if (broadcastResponse.error) {
+      if ('error' in broadcastResponse) {
         setStatus(`Error: ${broadcastResponse.error}`);
       } else {
         setStatus(`Transaction submitted! TX: ${broadcastResponse.txid}`);
@@ -193,8 +203,8 @@ export default function Home() {
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">
               Contract: {CONTRACT_ADDRESS}
-            </p>
-          </div>
+          </p>
+        </div>
 
           <div className="bg-gray-800/50 dark:bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-700 dark:border-gray-300">
             {/* Wallet Connection */}
@@ -248,14 +258,14 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <button
                 onClick={pauseContract}
-                disabled={loading || !userData || isPaused}
+                disabled={loading || !userData || isPaused === true}
                 className="bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-600 dark:disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 {loading ? 'Processing...' : 'Emergency Pause'}
               </button>
               <button
                 onClick={unpauseContract}
-                disabled={loading || !userData || !isPaused}
+                disabled={loading || !userData || isPaused !== true}
                 className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-600 dark:disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 {loading ? 'Processing...' : 'Unpause'}
@@ -285,18 +295,18 @@ export default function Home() {
                   <span className="text-gray-400 dark:text-gray-600">Explorer:</span>
                   <a 
                     href={`https://explorer.stacks.co/?chain=testnet&address=${address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+            target="_blank"
+            rel="noopener noreferrer"
                     className="text-blue-400 dark:text-blue-600 hover:text-blue-300 dark:hover:text-blue-700"
-                  >
+          >
                     View on Explorer
-                  </a>
+          </a>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
   );
 }
