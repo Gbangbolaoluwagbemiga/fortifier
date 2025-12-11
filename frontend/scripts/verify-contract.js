@@ -6,9 +6,9 @@
 
 const https = require('https');
 
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN.circuit-breaker';
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'SP2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA516AKZP.circuit-breaker';
 const [address, contractName] = CONTRACT_ADDRESS.split('.');
-const NETWORK = process.env.NEXT_PUBLIC_NETWORK || 'testnet';
+const NETWORK = process.env.NEXT_PUBLIC_NETWORK || 'mainnet';
 
 async function fetchJSON(url) {
   return new Promise((resolve, reject) => {

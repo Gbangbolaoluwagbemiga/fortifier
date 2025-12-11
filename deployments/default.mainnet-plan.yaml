@@ -1,16 +1,16 @@
 ---
 id: 0
-name: Testnet deployment
-network: testnet
-stacks-node: "https://api.testnet.hiro.so"
-bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+name: Mainnet deployment
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
 plan:
   batches:
     - id: 0
       transactions:
         - contract-publish:
             contract-name: circuit-breaker
-            expected-sender: ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN
+            expected-sender: SP2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA516AKZP
             cost: 72390
             path: contracts/circuit-breaker.clar
             anchor-block-only: true
