@@ -30,42 +30,17 @@ const nextConfig = {
       use: 'ignore-loader',
     });
     
-    // Handle viem testActions export issue with comprehensive replacement
+    // Handle viem testActions export issue
     config.plugins = config.plugins || [];
     const viemTestStub = path.resolve(__dirname, 'webpack-fixes/viem-test-stub.js');
     
-    // Replace all variations of viem test decorator imports
+    // Replace test.js imports from viem packages
     config.plugins.push(
       new webpack.NormalModuleReplacementPlugin(
-        /(.*\/)?viem\/_esm\/clients\/decorators\/test\.js$/,
-        viemTestStub
-      )
-    );
-    
-    config.plugins.push(
-      new webpack.NormalModuleReplacementPlugin(
-        /(.*\/)?viem\/_cjs\/clients\/decorators\/test\.js$/,
-        viemTestStub
-      )
-    );
-    
-    // Handle relative imports from within viem packages
-    config.plugins.push(
-      new webpack.NormalModuleReplacementPlugin(
-        /^\.\/clients\/decorators\/test\.js$/,
+        /decorators\/test\.js$/,
         (resource) => {
-          if (resource.context && (resource.context.includes('viem') || resource.context.includes('@walletconnect'))) {
-            resource.request = viemTestStub;
-          }
-        }
-      )
-    );
-    
-    config.plugins.push(
-      new webpack.NormalModuleReplacementPlugin(
-        /^\.\.\/decorators\/test\.js$/,
-        (resource) => {
-          if (resource.context && (resource.context.includes('viem') || resource.context.includes('@walletconnect'))) {
+          const context = resource.context || '';
+          if (context.includes('viem') || context.includes('@walletconnect')) {
             resource.request = viemTestStub;
           }
         }
@@ -86,6 +61,13 @@ const nextConfig = {
         'pino': false,
         'pino-pretty': false,
       };
+      
+      // Ignore pino-pretty imports
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^pino-pretty$/,
+        })
+      );
     }
     
     return config;

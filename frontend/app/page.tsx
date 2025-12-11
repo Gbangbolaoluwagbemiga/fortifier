@@ -7,8 +7,8 @@ import {
   broadcastTransaction,
   AnchorMode,
   PostConditionMode,
-  StacksTestnet,
 } from '@stacks/transactions';
+import { StacksNetworks } from '@stacks/network';
 import { useTheme } from './contexts/ThemeContext';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || 'ST2QNSNKR3NRDWNTX0Q7R4T8WGBJ8RE8RA7GKS7WN.circuit-breaker';
@@ -20,7 +20,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [userSession, setUserSession] = useState<UserSession | null>(null);
-  const [network, setNetwork] = useState<StacksTestnet | null>(null);
+  const [network, setNetwork] = useState<any | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
