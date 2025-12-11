@@ -209,8 +209,8 @@ export default function Home() {
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">Connected</p>
-                    <p className="text-lg font-mono">{userData.profile?.stxAddress?.testnet || 'N/A'}</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-600">Connected</p>
+                    <p className="text-lg font-mono dark:text-gray-900">{userData.profile?.stxAddress?.testnet || 'N/A'}</p>
                   </div>
                   <button
                     onClick={disconnect}
@@ -228,10 +228,10 @@ export default function Home() {
                 <h2 className="text-2xl font-bold dark:text-gray-900">Circuit Breaker Status</h2>
                 <div className={`px-4 py-2 rounded-full font-semibold ${
                   isPaused === null 
-                    ? 'bg-gray-600' 
+                    ? 'bg-gray-600 dark:bg-gray-400' 
                     : isPaused 
-                    ? 'bg-red-600' 
-                    : 'bg-green-600'
+                    ? 'bg-red-600 dark:bg-red-500' 
+                    : 'bg-green-600 dark:bg-green-500'
                 }`}>
                   {isPaused === null ? 'Loading...' : isPaused ? 'PAUSED' : 'ACTIVE'}
                 </div>
@@ -249,14 +249,14 @@ export default function Home() {
               <button
                 onClick={pauseContract}
                 disabled={loading || !userData || isPaused}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
+                className="bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-600 dark:disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 {loading ? 'Processing...' : 'Emergency Pause'}
               </button>
               <button
                 onClick={unpauseContract}
                 disabled={loading || !userData || !isPaused}
-                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
+                className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-600 dark:disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 {loading ? 'Processing...' : 'Unpause'}
               </button>
