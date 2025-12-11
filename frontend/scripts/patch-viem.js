@@ -8,7 +8,11 @@ const patches = [
   'node_modules/@walletconnect/utils/node_modules/viem/_esm/clients/decorators/test.js',
 ];
 
-const patchContent = "export const testActions = () => () => ({});\n";
+const patchContent = `export const testActions = (options) => (config) => {
+  return {};
+};
+export default { testActions };
+`;
 
 patches.forEach(patchPath => {
   const fullPath = path.join(__dirname, '..', patchPath);

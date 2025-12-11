@@ -54,6 +54,8 @@ const nextConfig = {
     
     config.resolve.alias = {
       ...config.resolve.alias,
+      // Direct alias for viem test decorators
+      'viem/_esm/clients/decorators/test': path.resolve(__dirname, 'webpack-fixes/viem-test-stub.js'),
     };
     
     // Exclude problematic packages from being processed
