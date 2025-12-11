@@ -43,20 +43,37 @@ export default function Home() {
   const connectWallet = async () => {
     if (!userSession) return;
     
-    showConnect({
-      appDetails: {
-        name: 'Fortifier',
-        icon: window.location.origin + '/icon.png',
-      },
-      onFinish: () => {
-        if (userSession) {
+    try {
+      if (typeof connect.showConnect === 'function') {
+        await connect.showConnect({
+          appDetails: {
+            name: 'Fortifier',
+            icon: window.location.origin + '/icon.png',
+          },
+          onFinish: () => {
+            if (userSession) {
+              const userData = userSession.loadUserData();
+              setUserData(userData);
+              setStatus('Wallet connected!');
+            }
+          },
+          userSession,
+        });
+      } else {
+        // Fallback: try to authenticate directly
+        if (userSession.authenticate) {
+          await userSession.authenticate();
           const userData = userSession.loadUserData();
           setUserData(userData);
           setStatus('Wallet connected!');
+        } else {
+          setStatus('Error: Wallet connection not available');
         }
-      },
-      userSession,
-    });
+      }
+    } catch (error: any) {
+      console.error('Error connecting wallet:', error);
+      setStatus(`Error: ${error.message || 'Failed to connect wallet'}`);
+    }
   };
 
   const disconnect = () => {
@@ -88,7 +105,7 @@ export default function Home() {
   };
 
   const pauseContract = async () => {
-    if (!userData || !network || !userSession) {
+    if (!userData || !userSession || !network) {
       setStatus('Please connect wallet first');
       return;
     }
@@ -97,40 +114,32 @@ export default function Home() {
     setStatus('Pausing contract...');
 
     try {
-      const txOptions = {
+      await openContractCall({
         contractAddress: address,
         contractName: contractName,
         functionName: 'pause',
         functionArgs: [],
-        senderKey: userData.appPrivateKey,
-        network,
+        network: network.network,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
-        fee: 1000,
-      };
-
-      const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction({
-        transaction,
-        coreApiUrl: network.url,
-        network: network.network,
+        onFinish: (data) => {
+          setStatus(`Transaction submitted! TX: ${data.txId}`);
+          setLoading(false);
+          setTimeout(checkPauseStatus, 5000);
+        },
+        onCancel: () => {
+          setStatus('Transaction cancelled');
+          setLoading(false);
+        },
       });
-
-      if ('error' in broadcastResponse) {
-        setStatus(`Error: ${broadcastResponse.error}`);
-      } else {
-        setStatus(`Transaction submitted! TX: ${broadcastResponse.txid}`);
-        setTimeout(checkPauseStatus, 5000);
-      }
     } catch (error: any) {
       setStatus(`Error: ${error.message}`);
-    } finally {
       setLoading(false);
     }
   };
 
   const unpauseContract = async () => {
-    if (!userData || !network || !userSession) {
+    if (!userData || !userSession || !network) {
       setStatus('Please connect wallet first');
       return;
     }
@@ -139,34 +148,26 @@ export default function Home() {
     setStatus('Unpausing contract...');
 
     try {
-      const txOptions = {
+      await openContractCall({
         contractAddress: address,
         contractName: contractName,
         functionName: 'unpause',
         functionArgs: [],
-        senderKey: userData.appPrivateKey,
-        network,
+        network: network.network,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow,
-        fee: 1000,
-      };
-
-      const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction({
-        transaction,
-        coreApiUrl: network.url,
-        network: network.network,
+        onFinish: (data) => {
+          setStatus(`Transaction submitted! TX: ${data.txId}`);
+          setLoading(false);
+          setTimeout(checkPauseStatus, 5000);
+        },
+        onCancel: () => {
+          setStatus('Transaction cancelled');
+          setLoading(false);
+        },
       });
-
-      if ('error' in broadcastResponse) {
-        setStatus(`Error: ${broadcastResponse.error}`);
-      } else {
-        setStatus(`Transaction submitted! TX: ${broadcastResponse.txid}`);
-        setTimeout(checkPauseStatus, 5000);
-      }
     } catch (error: any) {
       setStatus(`Error: ${error.message}`);
-    } finally {
       setLoading(false);
     }
   };
@@ -203,8 +204,8 @@ export default function Home() {
             </p>
             <p className="text-sm text-gray-400 dark:text-gray-600 mt-2">
               Contract: {CONTRACT_ADDRESS}
-          </p>
-        </div>
+            </p>
+          </div>
 
           <div className="bg-gray-800/50 dark:bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-700 dark:border-gray-300">
             {/* Wallet Connection */}
@@ -224,7 +225,7 @@ export default function Home() {
                   </div>
                   <button
                     onClick={disconnect}
-                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    className="bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
                   >
                     Disconnect
                   </button>
@@ -295,18 +296,18 @@ export default function Home() {
                   <span className="text-gray-400 dark:text-gray-600">Explorer:</span>
                   <a 
                     href={`https://explorer.stacks.co/?chain=mainnet&address=${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-blue-400 dark:text-blue-600 hover:text-blue-300 dark:hover:text-blue-700"
-          >
+                  >
                     View on Explorer
-          </a>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        </div>
-      </main>
+      </div>
+    </main>
   );
 }
